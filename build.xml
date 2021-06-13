@@ -1,0 +1,30 @@
+<project name="e-Lib" default="release" basedir=".">
+   <property name="srcDir" location="src"/>
+   <property name="buildDir" location="build"/>
+   <property name="binDir" location="bin"/>
+   <!-- Create compile and binary directories -->
+   <target name="init">
+      <tstamp/>
+      <mkdir dir="${buildDir}"/>
+      <mkdir dir="${binDir}"/>
+   </target>
+         
+   <!-- Create .class files and place them into build dir -->
+   <target name="compile" depends="init">
+      <javac srcdir="${srcDir}" destdir="${buildDir}"/>
+   </target>
+
+   <!-- compile .class files in build dir into .jar executable --> 
+   <target name="release" depends="compile">
+      <jar destfile="${binDir}/eLib.jar" basedir="${buildDir}">
+         <manifest>
+            <attribute name="Main-Class" value="main"/>
+         </manifest>
+      </jar>
+   </target>
+
+   <target name="clean">
+      <delete dir="${binDir}"/>
+      <delete dir="${buildDir}"/>
+   </target>   
+</project>
