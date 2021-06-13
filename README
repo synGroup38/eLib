@@ -1,0 +1,12 @@
+About
+=====
+
+eLib is a simple application made for the engineering without borders student challenge. It tracks the borrowing and returning of books at a library.
+
+
+Build
+=====
+
+This project uses the ant build system. Type 'ant' at the root of the repository to build it from source.
+
+Read the 'build.xml' file for more information. 
