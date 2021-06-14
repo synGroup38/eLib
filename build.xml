@@ -2,6 +2,7 @@
    <property name="srcDir" location="src"/>
    <property name="buildDir" location="build"/>
    <property name="binDir" location="bin"/>
+
    <!-- Create compile and binary directories -->
    <target name="init">
       <tstamp/>
@@ -16,7 +17,16 @@
 
    <!-- compile .class files in build dir into .jar executable --> 
    <target name="release" depends="compile">
-      <jar destfile="${binDir}/eLib.jar" basedir="${buildDir}">
+      <jar destfile="${binDir}/eLib.jar"> 
+         <fileset dir="build"/>
+         <restrict>
+            <name name="**/*.class"/>
+            <archives>
+               <zips>
+                  <fileset dir="lib" includes="**/*.jar"/>
+               </zips>
+            </archives>
+         </restrict>
          <manifest>
             <attribute name="Main-Class" value="main"/>
          </manifest>
