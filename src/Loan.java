@@ -30,9 +30,22 @@ public class Loan{
       }
    }
    
+   public String getLoanID(){
+      return loanID; 
+   }
+
+   public String getResourceID(){
+      return resourceID; 
+   }
+
+   public String getUserID(){
+      return userID; 
+   }
+
    public String getStartDate(){
       return startDate.format(DateTimeFormatter.ISO_LOCAL_DATE); 
    }
+   
    public String getEndDate(){
       return startDate.plusDays(days).format(DateTimeFormatter.ISO_LOCAL_DATE); 
    }
