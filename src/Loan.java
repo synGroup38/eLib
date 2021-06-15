@@ -1,6 +1,6 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter; 
-public class Loan implements Record{
+public class Loan extends Record{
    public enum DURATION{ 
       WEEK,
       FORTNIGHT,
@@ -14,7 +14,14 @@ public class Loan implements Record{
    public static  final char DELIMITER = '#'; 
 
    public Loan(String loanID, String resourceID , String userID,DURATION period){
+      this(resourceID,userID,period);
       this.loanID = loanID; 
+   }
+
+   public Loan(String resourceID,String userID,DURATION period){
+      startDate = LocalDate.now(); 
+
+      
       this.resourceID = resourceID; 
       this.userID = userID; 
       startDate = LocalDate.now();
@@ -28,8 +35,9 @@ public class Loan implements Record{
          case MONTH:  
                days = 30; 
       }
-   }
-   
+      String compositeKey = resourceID + userID + getEndDate(); 
+      loanID = hash(compositeKey); 
+   }   
    public String getLoanID(){
       return loanID; 
    }
@@ -64,6 +72,10 @@ public class Loan implements Record{
              "Start Date: " + getStartDate() + System.lineSeparator() +
              "End Date: " + getEndDate() + System.lineSeparator(); 
       return msg; 
+   }
+   @Override 
+   public String getName(){
+      return  loanID; 
    }
    @Override
    public String serialise(){

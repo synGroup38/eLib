@@ -1,21 +1,30 @@
 import java.util.ArrayList; 
-public class User implements Record{
+import java.time.LocalTime; 
+public class User extends Record{
    private String id; 
    private String fName; 
    private String lName; 
    private int nLoans = 0; 
    public static final char DELIMITER = '%'; 
+   public User(String fName,String lName){
+      this(fName,lName,0); 
+   }
    public User(String id,String fName , String lName){
-      this.id = id; 
-      this.fName = fName; 
-      this.lName = lName; 
+      this(fName,lName,0);
+      this.id = id;
    }
    
    public User(String id,String fName , String lName,int nLoans){
-      this.id = id; 
+      this(fName,lName,nLoans);
+      this.id = id;
+   }
+   public User(String fName , String lName , int nLoans){
       this.fName = fName; 
       this.lName = lName; 
       this.nLoans = nLoans; 
+      String candidateKey = fName + 
+         lName ;  
+      id = hash(candidateKey); 
    }
    public String getUserID(){
       return id; 
@@ -23,9 +32,25 @@ public class User implements Record{
    public int getLoanNumber(){
       return nLoans; 
    }
-
+   public void endLoan(){
+      if (nLoans > 0){
+         nLoans--; 
+      }
+   }
    public void addLoan(){
       nLoans++; 
+   }
+   @Override 
+   public String toString(){
+      String msg = "User["+id+"]" + System.lineSeparator() +
+         "First Name:" + fName + System.lineSeparator() +  
+         "Second Name:" + lName + System.lineSeparator() + 
+         "number of loans:" + nLoans + System.lineSeparator(); 
+      return msg; 
+   }
+   @Override 
+   public String getName(){
+      return fName+" " + lName;  
    }
    @Override 
    public String serialise(){

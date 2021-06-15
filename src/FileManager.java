@@ -17,7 +17,6 @@ public class FileManager{
       archive = new File(filePath);
       archive.createNewFile();
       reader = new Scanner(archive);
-      writer = new FileWriter(archive,false); /*overwrite if file already exists */ 
 
 
    }
@@ -28,29 +27,29 @@ public class FileManager{
    }
    public String readLine(){
       if(reader.hasNextLine()){
-         return reader.nextLine(); 
+         String line  = reader.nextLine(); 
+         System.out.println("fm:" + line);
+         return line; 
       }
+      System.out.println("no more lines"); 
       return null; 
    }
    public boolean flush(){
       try{
+         writer = new FileWriter(archive,false); /*overwrite file*/ 
          for(String line : outStream){
             writer.write(line + System.lineSeparator());
          }
          writer.flush(); 
          return true; 
       }catch(IOException e){
+         System.out.println("fm-file error");
          return false; 
       }
    }
-   public boolean closeFile(){
-      try{
-         writer.flush(); 
-         writer.close(); 
+   public boolean close(){
+         flush();  
          reader.close(); 
-      }catch(IOException e){
-         return false; 
-      }
       return true; 
    }
 }

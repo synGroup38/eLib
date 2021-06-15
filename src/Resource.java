@@ -1,12 +1,19 @@
-public class Resource implements Record{
+public class Resource extends Record{
 
    private  String id; 
-   private  String name; 
+   private  String name;
+   private  String author; 
    private boolean isFree = true; 
    public static final char DELIMITER = '@'; 
-   public Resource(String id, String name){
+   public Resource(String id, String name,String author){
+      this(name,author);
       this.id = id; 
+   }
+   public Resource(String name,String author){
       this.name = name; 
+      this.author = author; 
+      String key  = name + author; 
+      id = hash(key); 
    }
    public String getResourceID(){
       return id; 
@@ -16,6 +23,17 @@ public class Resource implements Record{
    }
    public boolean isFree(){
       return isFree; 
+   }
+   @Override
+   public String toString(){
+      String msg = "Resource["+id+"]"+System.lineSeparator() +
+         "Name:" + name + System.lineSeparator()+
+         "Author:" + author + System.lineSeparator();  
+         return msg; 
+   }
+   @Override 
+   public String getName(){
+      return name+"-"+author; 
    }
    @Override
    public String serialise(){
