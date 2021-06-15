@@ -57,6 +57,7 @@ public class LibraryManager{
             User newEntry = new User(null,null,null,0);
             if(newEntry.deserialise(line)){
                userMap.put(newEntry.getUserID(),newEntry); 
+               System.out.println("parsed:" + line); 
             }
             line = fm.readLine(); 
          }
@@ -72,7 +73,8 @@ public class LibraryManager{
          while(line != null){
             Resource newEntry = new Resource(null,null);
             if(newEntry.deserialise(line)){
-               resourceMap.put(newEntry.getResourceID(),newEntry); 
+               resourceMap.put(newEntry.getResourceID(),newEntry);
+               System.out.println("parsed:"+line); 
             }
             line = fm.readLine(); 
          }

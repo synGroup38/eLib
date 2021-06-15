@@ -38,7 +38,7 @@ public class Resource extends Record{
    @Override
    public String serialise(){
       String object = id + DELIMITER + 
-         name ; 
+         name + DELIMITER + author; 
       return object; 
    }
 
@@ -46,13 +46,14 @@ public class Resource extends Record{
    public boolean deserialise(String object){
       final int ID_INDEX = 0; 
       final int NAME_INDEX =1; 
-      
+      final int AUTHOR_INDEX=2;  
       String fields[] = object.split(String.valueOf(DELIMITER));
-      if(fields.length != 2){
+      if(fields.length != 3){
          return false; 
       }
       id = fields[ID_INDEX]; 
       name = fields[NAME_INDEX];
+      author = fields[AUTHOR_INDEX];
       return true; 
    }
 }
