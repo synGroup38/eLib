@@ -105,7 +105,7 @@ public class LibraryManager{
    }
 
 
-   private boolean permitLoan(String resourceID,String userID){
+   private synchronized boolean permitLoan(String resourceID,String userID){
       
       User targetUser = null; 
       Resource targetResource = null;
@@ -134,68 +134,146 @@ public class LibraryManager{
       }
       return true; 
    }
-   private <T extends Record> T findByName(String name,HashMap<String,T>map){
+   private synchronized <T extends Record> T findByName(String name,HashMap<String,T>map){
       ArrayList<T> list = new ArrayList<>(map.values()
          .stream().collect(Collectors.toUnmodifiableList())); 
-      T candidate = null; 
+      T candidate = null;
+      ArrayList<T> shortList = new ArrayList<>(); 
       for(T entry : list){
          System.out.println("current record:"+ entry.getName()); 
          if(entry.getName().equals(name)){
-            candidate = entry;
-            return candidate; 
+            shortList.add(entry); 
          }
+      }
+      if(shortList.size() > 1 ){
+         System.out.println("Name is not unique within database prompt user for ID"); 
+         return null; 
+      }
+      if(shortList.size() == 1){
+         return shortList.get(0); 
       }
       return null; 
    }
-   private boolean addLoan(String resourceID, String userID,Loan.DURATION time){
+   private synchronized String addLoan(String resourceID, String userID,Loan.DURATION time){
       if(!permitLoan(resourceID,userID)){
-         return false; 
+         return "Invalid IDs";  
       }
       Loan nextLoan = new Loan(resourceID,userID,time);
-      User candidateUser = userMap.get(userID); 
-      if(candidateUser != null){
-         candidateUser.addLoan(); 
-         loanMap.put(nextLoan.getLoanID(),nextLoan); 
-      }
-      return true; 
+         
+         User candidateUser = userMap.get(userID); 
+         if(candidateUser != null){
+            candidateUser.addLoan(); 
+            loanMap.put(nextLoan.getLoanID(),nextLoan); 
+         }else{
+            return "Invalid CustomerID";
+         }
+      return nextLoan.getLoanID(); 
    }
-   public boolean loanByName(String resourceName, String userName, Loan.DURATION period){
+   public String loanByName(String resourceName, String userName, Loan.DURATION period){
       System.out.println("looking for:" +  resourceName); 
       Resource candidateResource = findByName(resourceName,resourceMap);
       User candidateUser = findByName(userName,userMap); 
       if(candidateUser == null){
-         System.out.println("could not find user:" + userName);  
-         return false; 
+         String result = ("could not find user:" + userName);  
+         return result; 
       } 
       if(candidateResource == null){
-         System.out.println("could not find resource:"+ resourceName); 
-         return false; 
+         String result = ("could not find resource:"+ resourceName); 
+         return result; 
       }
       return addLoan(candidateResource.getResourceID()
             ,candidateUser.getUserID(),period); 
 
    }
-   public boolean addUser(String fName,String lName){
-      User candidateUser = new User(fName,lName);   
-      if (userMap.get(candidateUser.getUserID()) != null){
-         System.out.println("could not add:" + fName); 
-         return false; 
-      }
-      userMap.put(candidateUser.getUserID(),candidateUser); 
-      return true; 
+   public String addLoanByID(String resourceID, String userID , Loan.DURATION period ){
+      return addLoan(resourceID,userID,period); 
    }
-   public boolean addResource(String name,String author){
-      Resource candidateResource = new Resource(name,author); 
-      if(userMap.get(candidateResource.getResourceID()) != null){
-         System.out.println("could not add:" + name); 
+   private <T extends Record> boolean  removeFromMap (String id , HashMap<String,T> dataMap){
+      if(dataMap.remove(id) == null){
          return false; 
       }
-      resourceMap.put(candidateResource.getResourceID(),candidateResource); 
       return true; 
    }
 
+
+   public boolean removeUser(String id){
+      ArrayList<Loan> loanList = new ArrayList<>(loanMap.values()
+         .stream().collect(Collectors.toUnmodifiableList()));
+      for(Loan loan : loanList){
+         if(loan.getUserID().equals(id)){
+            /*cannot delete a user referenced by a pending loan*/
+            return false; 
+         }
+      }
+      return removeFromMap(id,userMap); 
+   }
+
+   public boolean removeLoan(String id){
+      
+      Loan candidateLoan = loanMap.get(id);
+      if(candidateLoan == null){
+         return false; 
+      }
+      
+      synchronized (this){
+         User candidateUser = userMap.get(candidateLoan.getUserID());
+         if(candidateUser != null){
+            candidateUser.endLoan(); 
+         }
+      }
+      
+      return removeFromMap(id,loanMap); 
+   }
+
+   public boolean removeResource(String id){
+      ArrayList<Loan> loanList = new ArrayList<>(loanMap.values()
+         .stream().collect(Collectors.toUnmodifiableList())); 
+      for(Loan loan : loanList ){
+         if(loan.getResourceID().equals(id)){
+            /*cannot delete a resource referenced by a pending loan */
+            return false; 
+         }
+      }
+      return removeFromMap(id,resourceMap); 
+   }
+   public Loan.DURATION parseDuration(String duration){
+      switch(duration){
+         case "WEEK":
+               return Loan.DURATION.WEEK; 
+            //break;
+         case "FORTNIGHT":
+               return Loan.DURATION.FORTNIGHT; 
+            //break; 
+         case "MONTH":
+               return Loan.DURATION.MONTH; 
+         default : 
+               return Loan.DURATION.FORTNIGHT;
+      }      
+   }
+
+   public synchronized String addUser(String fName,String lName){
+      User candidateUser = new User(fName,lName);   
+      
+      /*check if ID is unique */
+      if (userMap.get(candidateUser.getUserID()) != null){
+         System.out.println("could not add:" + fName); 
+         return null; 
+      }
+      userMap.put(candidateUser.getUserID(),candidateUser); 
+      return candidateUser.getUserID(); 
+   }
+   public synchronized String addResource(String name,String author){
+      Resource candidateResource = new Resource(name,author); 
+      if(userMap.get(candidateResource.getResourceID()) != null){
+         System.out.println("could not add:" + name); 
+         return null; 
+      }
+      resourceMap.put(candidateResource.getResourceID(),candidateResource); 
+      return candidateResource.getResourceID(); 
+   }
+
    /*writes contents of a map to a given file*/
-   private <T extends Record> boolean flushToFile(String filePath,HashMap<String,T > dataMap  ){
+   private synchronized <T extends Record> boolean flushToFile(String filePath,HashMap<String,T > dataMap  ){
       ArrayList<T> list = new ArrayList<>(dataMap.values()
          .stream().collect(Collectors.toUnmodifiableList())); 
        
@@ -213,6 +291,27 @@ public class LibraryManager{
          
       return true; 
    }
+   private synchronized <T extends Record>ArrayList<String> listMap(HashMap<String,T> dataMap){
+     ArrayList<String> result = new ArrayList<>(); 
+     ArrayList<T> list = new ArrayList<>(dataMap.values()
+         .stream().collect(Collectors.toUnmodifiableList())); 
+      for (Record i : list){
+         result.add(i.toString()); 
+      }
+      return result; 
+   }
+   
+   public ArrayList<String> listUsers(){
+      return listMap(userMap); 
+   }
+   public ArrayList<String> listResources(){
+      return listMap(resourceMap); 
+   }
+   public ArrayList<String> listLoans(){
+      return listMap(loanMap); 
+   }
+
+
    public void printLogs(){
    System.out.println("Loans"); 
    System.out.println("-------------------------------------"); 
@@ -231,10 +330,13 @@ public class LibraryManager{
    System.out.println(resourceMap);
    System.out.println("-------------------------------------"); 
    }
-   public boolean exit(){
+   public boolean save(){
       flushToFile(loanPath,loanMap);
       flushToFile(userPath,userMap);
       flushToFile(resourcePath,resourceMap); 
       return true; 
+   }
+   public void exit(){
+      save(); 
    }
 }
