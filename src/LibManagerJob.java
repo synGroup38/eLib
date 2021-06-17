@@ -43,18 +43,37 @@ public class LibManagerJob extends SwingWorker<ArrayList<String>,Integer>{
             result = main.getLibManager().listLoans(); 
             break; 
          case ADD_USER:
-           cmdResult =  main.getLibManager().addUser(args[0],args[1]); 
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot add user, empty input");
+                  return result; 
+               }
+            }
+
+            cmdResult =  main.getLibManager().addUser(args[0],args[1]); 
             finalResult = "Generated userID: " + cmdResult; 
             result.add(finalResult); 
              
             break; 
          case ADD_RESOURCE:
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot add resource, empty input");
+                  return result; 
+               }
+            }
             cmdResult = (main.getLibManager().addResource(args[0],args[1]));
             finalResult = "Generated resourceID: " + cmdResult;    
             result.add(finalResult); 
             
             break; 
          case ADD_LOAN: 
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot add resource, empty input");
+                  return result; 
+               }
+            }
             cmdResult = main.getLibManager().addLoanByID(args[0],args[1],
                      main.getLibManager().parseDuration(args[2])); 
             finalResult = "Generated loanID: " + cmdResult; 
@@ -64,6 +83,12 @@ public class LibManagerJob extends SwingWorker<ArrayList<String>,Integer>{
             result.add(finalResult);    
             break; 
          case DELETE_USER:
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot delete user, empty input");
+                  return result; 
+               }
+            }
             if(main.getLibManager().removeUser(args[0])){
                result.add("SUCCESS"); 
             }else{
@@ -73,6 +98,12 @@ public class LibManagerJob extends SwingWorker<ArrayList<String>,Integer>{
             }
             break; 
          case DELETE_LOAN:
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot delete loan, empty input");
+                  return result; 
+               }
+            }
             if(main.getLibManager().removeLoan(args[0])){
                result.add("SUCCESS"); 
             }else{
@@ -80,6 +111,12 @@ public class LibManagerJob extends SwingWorker<ArrayList<String>,Integer>{
             }
             break; 
          case DELETE_RESOURCE: 
+            for (String arg : args){
+               if(arg.length() == 0){
+                  result.add("ERROR cannot delete resource, empty input");
+                  return result; 
+               }
+            }
             if(main.getLibManager().removeResource(args[0])){
                result.add("SUCCESS"); 
             }else{

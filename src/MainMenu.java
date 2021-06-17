@@ -252,7 +252,7 @@ private static JPanel loanPanel = new JPanel();
     
    public void show(){
       rootFrame.pack(); 
-      rootFrame.setSize(800,800); 
+      rootFrame.setSize(1200,800); 
       rootFrame.setVisible(true);
    }
    public void hide(){
